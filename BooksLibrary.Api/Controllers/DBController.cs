@@ -1,4 +1,6 @@
-﻿using BooksLibrary.Model;
+﻿using BooksLibrary.Core.Interfaces;
+using BooksLibrary.Core.Services;
+using BooksLibrary.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +18,28 @@ namespace BooksLibrary.Api.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public IActionResult CheckDatabaseConnection()
+        [HttpGet("Check")]
+        public async Task<IActionResult> CheckDatabase()
         {
-            _context.Database.EnsureCreated();
+            await _context.Database.EnsureCreatedAsync();
+
             return Ok("Db is SQL Server: " + _context.Database.IsSqlServer());
+        }
+
+        [HttpGet("Seed")]
+        public async Task<IActionResult> SeedDatabase()
+        {
+            try
+            {
+                var seedService = new SeedService(_context) as ISeedService;
+
+                await seedService.Seed();
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

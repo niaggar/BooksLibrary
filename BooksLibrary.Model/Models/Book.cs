@@ -16,7 +16,7 @@ namespace BooksLibrary.Model.Models
         public string? CoverUrl { get; set; }
         public string? Isbn { get; set; }
         public string? Year { get; set; }
-        public Genre[] Genres { get; set; }
+        public List<Genre> Genres { get; set; }
         public int AuthorId { get; set; }
 
 

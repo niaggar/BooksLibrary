@@ -10,6 +10,7 @@ namespace BooksLibrary.Model.Enums
     {
         Saved,
         Read,
+        ToRead,
         Like,
         Dislike
     }

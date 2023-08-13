@@ -1,6 +1,7 @@
 ﻿using BooksLibrary.Core.Interfaces;
 using BooksLibrary.Model;
 using BooksLibrary.Model.Models;
+using BooksLibrary.Model.TO;
 using Microsoft.EntityFrameworkCore;
 
 namespace BooksLibrary.Core.Services
@@ -9,7 +10,7 @@ namespace BooksLibrary.Core.Services
     {
         public UserService(BooksLibraryContext context) : base(context) { }
 
-        public async Task<User> CreateUser(User user)
+        public async Task<UserTO> CreateUser(UserTO user)
         {
             if (user is null)
                 throw new ArgumentNullException(nameof(user));
@@ -19,57 +20,59 @@ namespace BooksLibrary.Core.Services
             if (await UserExists(user.Email, user.Username))
                 throw new Exception("User already exists");
 
-            var newUser = await DbSet.AddAsync(user);
-            await SaveChanges();
+            var newUser = new User()
+            {
+                Username = user.Username,
+                Email = user.Email,
+                Password = user.Password
+            };
 
-            return newUser.Entity;
+            var userDB = await DbSet.AddAsync(newUser);
+
+            return new UserTO() { Id = userDB.Entity.Id, Username = userDB.Entity.Username, Email = userDB.Entity.Email };
         }
 
-        public async Task<User> AuthenticateUser(string mail, string password)
+        public async Task<UserTO> AuthenticateUser(string mail, string password)
         {
             var user = await DbSet
                 .Where(u => u.Email == mail && u.Password == password)
                 .Include(u => u.Token)
-                .Select(u => new User
+                .Select(u => new UserTO()
                 {
                     Id = u.Id,
                     Username = u.Username,
                     Email = u.Email,
-                    Token = u.Token
+                    Token = u.Token.Token
                 })
                 .FirstOrDefaultAsync();
 
             return user;
         }
 
-        public async Task<User> GetUser(int id)
+        public async Task<UserTO> GetUser(int id)
         {
             var user = await DbSet
                 .Where(u => u.Id == id)
-                .Include(u => u.RelationBooks)
-                .Select(u => new User
+                .Select(u => new UserTO()
                 {
                     Id = u.Id,
                     Username = u.Username,
                     Email = u.Email,
-                    RelationBooks = u.RelationBooks
                 })
                 .FirstOrDefaultAsync();
 
             return user;
         }
 
-        public async Task<User> GetUserByUsername(string username)
+        public async Task<UserTO> GetUserByUsername(string username)
         {
             var user = await DbSet
                 .Where(u => u.Username == username)
-                .Include(u => u.RelationBooks)
-                .Select(u => new User
+                .Select(u => new UserTO()
                 {
                     Id = u.Id,
                     Username = u.Username,
                     Email = u.Email,
-                    RelationBooks = u.RelationBooks
                 })
                 .FirstOrDefaultAsync();
 
@@ -79,7 +82,7 @@ namespace BooksLibrary.Core.Services
 
 
         #region Private Methods
-        private void ValidateUserFields(User user)
+        private void ValidateUserFields(UserTO user)
         {
             if (string.IsNullOrEmpty(user.Username))
                 throw new ArgumentNullException(nameof(user.Username));

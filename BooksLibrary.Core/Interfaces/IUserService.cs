@@ -1,4 +1,5 @@
 ﻿using BooksLibrary.Model.Models;
+using BooksLibrary.Model.TO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace BooksLibrary.Core.Interfaces
 {
     public interface IUserService
     {
-        Task<User> AuthenticateUser(string email, string password);
-        Task<User> GetUser(int id);
-        Task<User> GetUserByUsername(string username);
-        Task<User> CreateUser(User user);
+        Task<UserTO> AuthenticateUser(string email, string password);
+        Task<UserTO> GetUser(int id);
+        Task<UserTO> GetUserByUsername(string username);
+        Task<UserTO> CreateUser(UserTO user);
     }
 }

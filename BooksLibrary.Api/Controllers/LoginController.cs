@@ -1,5 +1,6 @@
 ﻿using BooksLibrary.Core.Interfaces;
 using BooksLibrary.Model.Models;
+using BooksLibrary.Model.TO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -21,32 +22,58 @@ namespace BooksLibrary.Api.Controllers
 
         [HttpPost]
         [Route("Authenticate")]
-        public async Task<IActionResult> Authenticate(LoginRequest login)
+        public async Task<IActionResult> Authenticate(LoginTO login)
         {
-            var user = await _userService.AuthenticateUser(login.Email, login.Password);
-
-            if (user == null)
+            try
             {
-                return Unauthorized();
-            }
+                var result = new ResultTO<UserTO>();
+                var user = await _userService.AuthenticateUser(login.Email, login.Password);
 
-            return Ok(new { Token = user.Token });
+                if (user == null)
+                {
+                    result = new ResultTO<UserTO>
+                    {
+                        Success = false,
+                        Message = "Invalid credentials"
+                    };
+
+                    return StatusCode((int)HttpStatusCode.Unauthorized, result);
+                }
+
+                result.Success = true;
+                result.Data = user;
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                var res = new ResultTO<object> { Success = false, Message = ex.Message };
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
         }
 
         [HttpPost]
         [Route("Register")]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register(UserTO user)
         {
             try
             {
                 var userDb = await _userService.CreateUser(user);
+                var token = await _tokenService.GenerateAccessToken(userDb.Username, userDb.Id);
+                userDb.Token = token;
 
-                var token = _tokenService.GenerateAccessToken(userDb.Username, userDb.Id);
-                return Ok(token);
+                var result = new ResultTO<UserTO>
+                {
+                    Data = userDb,
+                    Success = true
+                };
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
+                var res = new ResultTO<object> { Success = false, Message = ex.Message };
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }
         }
 
@@ -55,12 +82,25 @@ namespace BooksLibrary.Api.Controllers
         [Route("GetUser")]
         public async Task<IActionResult> GetUser()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            var (userId, username) = await _tokenService.GetClaims(token);
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var (userId, username) = await _tokenService.GetClaims(token);
 
-            var user = await _userService.GetUser(int.Parse(userId));
+                var userDB = await _userService.GetUser(int.Parse(userId));
 
-            return Ok(user);
+                var res = new ResultTO<UserTO>
+                {
+                    Data = userDB,
+                    Success = true
+                };
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var res = new ResultTO<object> { Success = false, Message = ex.Message };
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
         }
 
         [HttpPost]
@@ -68,10 +108,22 @@ namespace BooksLibrary.Api.Controllers
         [Route("Logout")]
         public async Task<IActionResult> Logout()
         {
-            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            await _tokenService.RevokeToken(token);
+            try
+            {
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var (userId, username) = await _tokenService.GetClaims(token);
 
-            return Ok();
+                await _tokenService.RevokeToken(userId);
+
+                var res = new ResultTO<string> { Success = true, Data = "Logout success" };
+                return Ok(res);
+
+            }
+            catch (Exception ex)
+            { 
+                var res = new ResultTO<object> { Success = false, Message = ex.Message };
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
         }
 
         [HttpGet]
@@ -79,7 +131,8 @@ namespace BooksLibrary.Api.Controllers
         [Route("Test")]
         public IActionResult Test()
         {
-            return Ok("Just a test");
+            var res = new ResultTO<string> { Success = true, Data = "Test success" };
+            return Ok(res);
         }
     }
 }

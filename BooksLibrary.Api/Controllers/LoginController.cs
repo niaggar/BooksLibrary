@@ -1,5 +1,4 @@
 ﻿using BooksLibrary.Core.Interfaces;
-using BooksLibrary.Model.Models;
 using BooksLibrary.Model.TO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

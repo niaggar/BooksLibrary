@@ -15,21 +15,49 @@ namespace BooksLibrary.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            builder.Services.AddSqlServer<BooksLibraryContext>(builder.Configuration.GetConnectionString("DefaultConnection"));
-            builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            ConfigureServices(builder.Services, builder.Configuration);
+            ConfigureSecurity(builder.Services, builder.Configuration);
 
-            var issuer = builder.Configuration["AuthenticationSettings:Issuer"];
-            var audience = builder.Configuration["AuthenticationSettings:Audience"];
-            var signinKey = builder.Configuration["AuthenticationSettings:SigningKey"];
+            var app = builder.Build();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-            builder.Services.AddAuthorization(options =>
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseMiddleware<TokenMiddleware>();
+            app.UseAuthorization();
+            app.MapControllers();
+            app.UseCors("AllowAll");
+
+            app.Run();
+        }
+
+        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSqlServer<BooksLibraryContext>(configuration.GetConnectionString("DefaultConnection"));
+            services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
+
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IBookService, BookService>();
+        }
+
+        private static void ConfigureSecurity(IServiceCollection services, IConfiguration configuration)
+        {
+            var issuer = configuration["AuthenticationSettings:Issuer"];
+            var audience = configuration["AuthenticationSettings:Audience"];
+            var signinKey = configuration["AuthenticationSettings:SigningKey"];
+
+            services.AddAuthorization(options =>
                 options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme).RequireAuthenticatedUser().Build()
             );
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
                 options.Audience = audience;
                 options.TokenValidationParameters = new TokenValidationParameters()
@@ -42,28 +70,13 @@ namespace BooksLibrary.Api
                 };
             });
 
-
-            builder.Services.AddScoped<ITokenService, TokenService>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IBookService, BookService>();
-
-
-
-            var app = builder.Build();
-
-            if (app.Environment.IsDevelopment())
+            services.AddCors(options =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseAuthentication();
-            app.UseMiddleware<TokenMiddleware>();
-            app.UseAuthorization();
-            app.MapControllers();
-
-            app.Run();
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
         }
     }
 }

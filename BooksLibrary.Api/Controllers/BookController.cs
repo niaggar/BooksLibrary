@@ -1,7 +1,7 @@
 ﻿using BooksLibrary.Core.Interfaces;
+using BooksLibrary.Model.Enums;
 using BooksLibrary.Model.TO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -91,6 +91,21 @@ namespace BooksLibrary.Api.Controllers
             }
         }
 
+        [HttpGet("GetBookWithUserRelation/{relation?}", Name = "GetBookWithUserRelation")]
+        public async Task<IActionResult> GetBookWithUserRelation([FromQuery] int id, [FromRoute] RelationUserBookEnum? relation)
+        {
+            try
+            {
+                var book = await _service.GetBooksByUser(id, relation);
+                var res = new ResultTO<IEnumerable<BookTO>> { Data = book, Success = true };
 
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                var res = new ResultTO<object> { Success = false, Message = ex.Message };
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
+        }
     }
 }

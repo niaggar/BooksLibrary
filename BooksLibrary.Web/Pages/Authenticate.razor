@@ -1,0 +1,25 @@
+﻿@page "/authenticate";
+@using BooksLibrary.Web.Contracts;
+@using BooksLibrary.Web.ViewModel;
+@inject ILoginContract LoginContract;
+
+
+<EditForm Model="@loginModel" OnSubmit="@HandleSubmit">
+    <InputText @bind-Value="loginModel.Email" />
+    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleSubmit()
+    {
+        if (!loginModel.IsValid())
+            return;
+
+        var result = await LoginContract.Authenticate(loginModel);
+    }
+}

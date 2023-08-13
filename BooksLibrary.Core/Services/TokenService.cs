@@ -25,7 +25,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task<string> GenerateAccessToken(string username, int userId)
         {
-            var actualDate = DateTime.UtcNow;
+            var actualDate = DateTime.Now;
             var timeSpan = TimeSpan.FromHours(1);
             var expireAt = actualDate.Add(timeSpan);
 
@@ -51,7 +51,7 @@ namespace BooksLibrary.Core.Services
         {
             var (userId, username) = GetTokenClaims(token);
 
-            var actualDate = DateTime.UtcNow;
+            var actualDate = DateTime.Now;
             var timeSpan = TimeSpan.FromHours(1);
             var expireAt = actualDate.Add(timeSpan);
 
@@ -89,7 +89,12 @@ namespace BooksLibrary.Core.Services
         public async Task<bool> ValidateToken(string token)
         {
             var (userId, username) = GetTokenClaims(token);
-            var userToken = await DbSet.FirstOrDefaultAsync(ut => ut.UserId == int.Parse(userId) && ut.Token == token);
+            var userToken = await DbSet.FirstOrDefaultAsync(ut => ut.UserId == int.Parse(userId));
+
+            if (userToken.Token.Equals(token) == false)
+            {
+                return false;
+            }
 
             if (userToken == null)
             {
@@ -101,7 +106,7 @@ namespace BooksLibrary.Core.Services
                 return false;
             }
 
-            if (userToken.ExpireAt < DateTime.UtcNow)
+            if (userToken.ExpireAt < DateTime.Now)
             {
                 return false;
             }

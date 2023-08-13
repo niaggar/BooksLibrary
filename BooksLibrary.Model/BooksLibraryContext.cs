@@ -94,7 +94,7 @@ namespace BooksLibrary.Model
                 x.ToTable("UserToken");
 
                 x.HasKey(p => p.Id);
-                x.Property(p => p.Token).IsRequired().HasMaxLength(500);
+                x.Property(p => p.Token).IsRequired();
                 x.Property(p => p.ExpireAt).IsRequired();
                 x.Property(p => p.Revoked).IsRequired();
                 x.Property(p => p.UserId).IsRequired();

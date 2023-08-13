@@ -19,7 +19,6 @@ namespace BooksLibrary.Model.Models
             Token = token;
             ExpireAt = expireAt;
             UserId = userId;
-            Revoked = DateTime.UtcNow >= expireAt;
         }
 
 

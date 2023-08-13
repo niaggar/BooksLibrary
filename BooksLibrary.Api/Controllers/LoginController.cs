@@ -40,6 +40,8 @@ namespace BooksLibrary.Api.Controllers
                     return StatusCode((int)HttpStatusCode.Unauthorized, result);
                 }
 
+                var token = await _tokenService.GenerateAccessToken(user.Username, user.Id);
+                user.Token = token;
                 result.Success = true;
                 result.Data = user;
 
@@ -120,7 +122,7 @@ namespace BooksLibrary.Api.Controllers
 
             }
             catch (Exception ex)
-            { 
+            {
                 var res = new ResultTO<object> { Success = false, Message = ex.Message };
                 return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }

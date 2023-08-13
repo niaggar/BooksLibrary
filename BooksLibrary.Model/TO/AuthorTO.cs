@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace BooksLibrary.Model.TO
 {
-    public class ResultTO<T> where T : class
+    public class AuthorTO
     {
-        public T Data { get; set; }
-        public bool Success { get; set; }
-        public string Message { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }

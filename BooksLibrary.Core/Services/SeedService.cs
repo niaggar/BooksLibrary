@@ -6,14 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BooksLibrary.Core.Services
 {
-    public class SeedService : ISeedService
+    public class SeedService : BaseService<SeedService>, ISeedService
     {
-        private readonly BooksLibraryContext _context;
-
-        public SeedService(BooksLibraryContext context)
-        {
-            _context = context;
-        }
+        public SeedService(BooksLibraryContext context) : base(context) { }
 
         public async Task Seed()
         {
@@ -106,7 +101,7 @@ namespace BooksLibrary.Core.Services
             };
 
             await _context.RelationUserBooks.AddRangeAsync(relationUserBooks);
-            await _context.SaveChangesAsync();
+            await SaveChanges();
         }
 
         public async Task Clear()
@@ -117,7 +112,7 @@ namespace BooksLibrary.Core.Services
             await _context.Genres.ExecuteDeleteAsync();
             await _context.Users.ExecuteDeleteAsync();
 
-            await _context.SaveChangesAsync();
+            await SaveChanges();
         }
     }
 }

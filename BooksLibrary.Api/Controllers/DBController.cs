@@ -1,7 +1,6 @@
 ﻿using BooksLibrary.Core.Interfaces;
 using BooksLibrary.Core.Services;
 using BooksLibrary.Model;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +20,7 @@ namespace BooksLibrary.Api.Controllers
         [HttpGet("Check")]
         public async Task<IActionResult> CheckDatabase()
         {
+            await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
 
             return Ok("Db is SQL Server: " + _context.Database.IsSqlServer());

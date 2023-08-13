@@ -11,11 +11,12 @@ namespace BooksLibrary.Model
 {
     public class BooksLibraryContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Book> Books { get; set; }
-        public DbSet<Genre> Genres { get; set; }
-        public DbSet<Author> Authors { get; set; }
-        public DbSet<RelationUserBook> RelationUserBooks { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Book> Books { get; set; }
+        public virtual DbSet<Genre> Genres { get; set; }
+        public virtual DbSet<Author> Authors { get; set; }
+        public virtual DbSet<RelationUserBook> RelationUserBooks { get; set; }
+        public virtual DbSet<UserToken> UserRefreshTokens { get; set; }
 
         public BooksLibraryContext(DbContextOptions<BooksLibraryContext> options) : base(options) { }
 
@@ -86,6 +87,19 @@ namespace BooksLibrary.Model
 
                 x.HasOne(p => p.User).WithMany(p => p.RelationBooks).HasForeignKey(p => p.UserId);
                 x.HasOne(p => p.Book).WithMany(p => p.RelationUsers).HasForeignKey(p => p.BookId);
+            });
+
+            modelBuilder.Entity<UserToken>(x =>
+            {
+                x.ToTable("UserToken");
+
+                x.HasKey(p => p.Id);
+                x.Property(p => p.Token).IsRequired().HasMaxLength(500);
+                x.Property(p => p.ExpireAt).IsRequired();
+                x.Property(p => p.Revoked).IsRequired();
+                x.Property(p => p.UserId).IsRequired();
+
+                x.HasOne(p => p.User).WithOne(p => p.Token).HasPrincipalKey<User>(p => p.Id).HasForeignKey<UserToken>(p => p.UserId);
             });
 
             base.OnModelCreating(modelBuilder);

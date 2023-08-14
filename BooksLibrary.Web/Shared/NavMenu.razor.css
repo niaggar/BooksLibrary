@@ -1,1 +1,75 @@
+nav {
+    background-color: rgba(117, 112, 141, 0.50);
+    backdrop-filter: blur(20px);
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    border-radius: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    box-shadow: 0px 5px 10px 0px #0000001a;
+}
 
+.nav-search-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(117, 112, 141, 0.50);
+    backdrop-filter: blur(20px);
+    width: 50ch;
+    height: 50px;
+    border-radius: 12px;
+    padding: 0 1rem;
+    gap: 1rem;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+::deep .nav-search-content svg {
+    color: var(--text-color);
+    fill: var(--text-color);
+}
+
+.nav-search-content input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    font-size: 1rem;
+    width: 100%;
+}
+
+.nav-search-content:hover {
+    box-shadow: 0px 0px 10px 0px #ffffff26;
+}
+
+.nav-search-content:focus-within {
+    box-shadow: 0px 0px 10px 0px #ffffff26;
+}
+
+.nav-search-content input::placeholder {
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.nav-user-button {
+    display: flex;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+.nav-user-button img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    transition: box-shadow border 0.3s ease-in-out;
+    border: 1px solid transparent;
+}
+
+.nav-user-button:hover img {
+    cursor: pointer;
+    box-shadow: 0px 0px 10px 0px #ffffff26;
+    border: 1px solid var(--text-color);
+}

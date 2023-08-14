@@ -1,1 +1,24 @@
+.main-container {
+    border-radius: 18px;
+    background: rgba(86, 85, 102, 0.20);
+    backdrop-filter: blur(20px);
+    width: 100%;
+    padding: 4rem 3rem;
+    margin: 20px 0;
+    box-shadow: 0px 5px 10px 0px #0000001a;
+}
 
+.main-header {
+    margin: 8rem 0 4rem 0;
+}
+
+.main-header h1 {
+    font-size: 6rem;
+    font-weight: 700;
+}
+
+.main-header h3 {
+    font-size: 2rem;
+    font-weight: 400;
+    opacity: 0.8;
+}

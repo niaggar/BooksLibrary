@@ -4,11 +4,6 @@ using BooksLibrary.Model.Enums;
 using BooksLibrary.Model.Models;
 using BooksLibrary.Model.TO;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BooksLibrary.Core.Services
 {
@@ -18,7 +13,7 @@ namespace BooksLibrary.Core.Services
         {
         }
 
-        public async Task<BookTO> GetBook(int id)
+        public async ValueTask<BookTO> GetBook(int id)
         {
             var resDB = await DbSet
                 .Include(x => x.Author)
@@ -46,67 +41,30 @@ namespace BooksLibrary.Core.Services
             return resDB;
         }
 
-        public async Task<PaginationResultTO<BookTO>> GetBooks(PaginationTO? pagination)
+        public async ValueTask<PaginationResultTO<BookTO>> GetBooks(FilterTO? filter, PaginationTO? pagination)
         {
-            var query = GetQuery();
+            var query = BuildBaseQuery();
 
-            if (pagination != null)
-                query = query.Skip((pagination.Page.Value - 1) * pagination.PageSize.Value).Take(pagination.PageSize.Value);
+            if (filter != null) ApplyFilter(ref query, filter);
 
-            var totalBooks = await query.CountAsync();
-            var totalPage = (int)Math.Ceiling((double)totalBooks / pagination.PageSize.Value);
+            var totalItems = await query.CountAsync();
+            if (pagination != null) ApplyPagination(ref query, pagination);
+
             var resDB = await query.ToListAsync();
+            var totalPages = pagination != null 
+                ? CalculateTotalPages(totalItems, pagination.PageSize!.Value) 
+                : 1;
 
             return new PaginationResultTO<BookTO>
             {
-                TotalItems = totalBooks,
-                TotalPages = totalPage,
                 Items = resDB,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
                 Pagination = pagination
             };
         }
 
-        public async Task<PaginationResultTO<BookTO>> GetBooksByAuthor(int authorId, PaginationTO? pagination)
-        {
-            var query = GetQuery().Where(x => x.Author.Id == authorId);
-
-            if (pagination != null)
-                query = query.Skip((pagination.Page.Value - 1) * pagination.PageSize.Value).Take(pagination.PageSize.Value);
-
-            var totalBooks = await query.CountAsync();
-            var totalPage = (int)Math.Ceiling((double)totalBooks / pagination.PageSize.Value);
-            var resDB = await query.ToListAsync();
-            
-            return new PaginationResultTO<BookTO>
-            {
-                TotalItems = totalBooks,
-                TotalPages = totalPage,
-                Items = resDB,
-                Pagination = pagination
-            };
-        }
-
-        public async Task<PaginationResultTO<BookTO>> GetBooksByGenre(string[] genresNames, PaginationTO? pagination)
-        {
-            var query = GetQuery().Where(x => x.Genres.Any(g => genresNames.Contains(g.Name)));
-
-            if (pagination != null)
-                query = query.Skip((pagination.Page.Value - 1) * pagination.PageSize.Value).Take(pagination.PageSize.Value);
-
-            var totalBooks = await query.CountAsync();
-            var totalPage = (int)Math.Ceiling((double)totalBooks / pagination.PageSize.Value);
-            var resDB = await query.ToListAsync();
-
-            return new PaginationResultTO<BookTO>
-            {
-                TotalItems = totalBooks,
-                TotalPages = totalPage,
-                Items = resDB,
-                Pagination = pagination
-            };
-        }
-
-        public async Task<IEnumerable<BookTO>> GetBooksByUser(int userId, RelationUserBookEnum? relation)
+        public async ValueTask<IEnumerable<BookTO>> GetBooksByUser(int userId, RelationUserBookEnum? relation)
         {
             var query = DbSet
                 .Include(x => x.Author)
@@ -139,11 +97,12 @@ namespace BooksLibrary.Core.Services
 
 
         #region Private Methods
-        private IQueryable<BookTO> GetQuery()
+        private IQueryable<BookTO> BuildBaseQuery()
         {
             var query = DbSet
                 .Include(x => x.Author)
                 .Include(x => x.Genres)
+                .OrderBy(x => x.Title)
                 .Select(x => new BookTO
                 {
                     Id = x.Id,
@@ -160,6 +119,33 @@ namespace BooksLibrary.Core.Services
                 });
 
             return query;
+        }
+
+        private void ApplyFilter(ref IQueryable<BookTO> query, FilterTO filter)
+        {
+            query = filter.Filter switch
+            {
+                FilterEnum.Author => query.Where(x => x.Author.Name.Contains(filter.Value)),
+                FilterEnum.Genre => query.Where(x => x.Genres.Any(g => g.Name.Contains(filter.Value))),
+                FilterEnum.Title => query.Where(x => x.Title.Contains(filter.Value)),
+                FilterEnum.Year => query.Where(x => x.Year == filter.Value),
+                FilterEnum.Pages => query.Where(x => int.Parse(filter.Value) <= x.Pages),
+                FilterEnum.None => query
+            };
+        }
+
+        private void ApplyPagination(ref IQueryable<BookTO> query, PaginationTO pagination)
+        {
+            var skip = (pagination.Page - 1) * pagination.PageSize;
+            query = query.Skip(skip!.Value).Take(pagination.PageSize!.Value);
+        }
+
+        private int CalculateTotalPages(int totalItems, int pageSize)
+        {
+            if (pageSize <= 0)
+                return 1;
+
+            return (int)Math.Ceiling((double)totalItems / pageSize);
         }
         #endregion
     }

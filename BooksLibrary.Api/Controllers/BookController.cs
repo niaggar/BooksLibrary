@@ -19,27 +19,8 @@ namespace BooksLibrary.Api.Controllers
             _service = service;
         }
 
-        [AllowAnonymous]
-        [HttpGet("GetAllBooks", Name = "GetAllBooks")]
-        public async Task<IActionResult> GetAllBooks([FromQuery] PaginationTO? pagination = null)
-        {
-            try
-            {
-                var books = await _service.GetBooks(pagination);
-                var res = new ResultTO<PaginationResultTO<BookTO>> { Data = books, Success = true };
-
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                var res = new ResultTO<object> { Success = false, Message = ex.Message };
-                return StatusCode((int)HttpStatusCode.InternalServerError, res);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpGet("GetBookWithID", Name = "GetBookWithID")]
-        public async Task<IActionResult> GetBookWithID([FromQuery] int id)
+        [HttpGet("Get", Name = "GetBook")]
+        public async Task<IActionResult> Get([FromQuery] int id)
         {
             try
             {
@@ -55,31 +36,12 @@ namespace BooksLibrary.Api.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpGet("GetBooksByAuthor/{authorId}", Name = "GetBooksByAuthor")]
-        public async Task<IActionResult> GetBooksByAuthor([FromRoute] int authorId, [FromQuery] PaginationTO? pagination)
+        [HttpGet("GetAll/{filter.Filter?}/{filter.Value?}", Name = "GetBooks")]
+        public async Task<IActionResult> Get([FromRoute] FilterTO? filter, [FromQuery] PaginationTO? pagination)
         {
             try
             {
-                var books = await _service.GetBooksByAuthor(authorId, pagination);
-                var res = new ResultTO<PaginationResultTO<BookTO>> { Data = books, Success = true };
-
-                return Ok(res);
-            }
-            catch (Exception ex)
-            {
-                var res = new ResultTO<object> { Success = false, Message = ex.Message };
-                return StatusCode((int)HttpStatusCode.InternalServerError, res);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpGet("GetBooksByGenre/{genresNames}", Name = "GetBooksByGenre")]
-        public async Task<IActionResult> GetBooksByGenre([FromRoute] string[] genresNames, [FromQuery] PaginationTO? pagination)
-        {
-            try
-            {
-                var books = await _service.GetBooksByGenre(genresNames, pagination);
+                var books = await _service.GetBooks(filter, pagination);
                 var res = new ResultTO<PaginationResultTO<BookTO>> { Data = books, Success = true };
 
                 return Ok(res);

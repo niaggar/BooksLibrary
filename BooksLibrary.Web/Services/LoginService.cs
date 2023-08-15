@@ -1,5 +1,6 @@
 ﻿using BooksLibrary.Model.TO;
 using BooksLibrary.Web.Contracts;
+using BooksLibrary.Web.Utils;
 using BooksLibrary.Web.ViewModel;
 using System.Net.Http.Json;
 
@@ -7,7 +8,8 @@ namespace BooksLibrary.Web.Services
 {
     public class LoginService : BaseService, ILoginContract
     {
-        public LoginService(HttpClient httpClient) : base(httpClient)
+        public LoginService(HttpClient httpClient, WebAlertsUtil webAlerts)
+            : base(httpClient, webAlerts, "Login/")
         {
         }
 
@@ -19,10 +21,8 @@ namespace BooksLibrary.Web.Services
                 Password = loginModel.Password
             };
 
-            var res = await Client.PostAsJsonAsync("Login/Authenticate", loginTo);
-            if (!res.IsSuccessStatusCode) return null;
+            var resTo = await PostAsync<ResultTO<UserTO>>("Authenticate", loginTo);
 
-            var resTo = await res.Content.ReadFromJsonAsync<ResultTO<UserTO>>();
             return resTo!.Data;
         }
 

@@ -1,9 +1,51 @@
 ﻿@page "/"
+@using BooksLibrary.Model.TO;
+@using BooksLibrary.Web.Contracts;
+@inject IBookContract BookContract;
 
 <PageTitle>BooksLibrary</PageTitle>
 
+<h1>Books</h1>
+
+@if (books.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Year</th>
+                <th>Genre</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var book in books)
+            {
+                <tr>
+                    <td>@book.Id</td>
+                    <td>@book.Title</td>
+                    <td>@book.Author</td>
+                    <td>@book.Year</td>
+                    <td>@book.Genres.FirstOrDefault()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p><em>No books found.</em></p>
+}
 
 
 @code {
+    private List<BookTO> books = new List<BookTO>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        var test = await BookContract.GetBooks();
+
+        books = test.Items.ToList();
+    }
 }

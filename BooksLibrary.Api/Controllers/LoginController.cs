@@ -86,7 +86,7 @@ namespace BooksLibrary.Api.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var (userId, username) = await _tokenService.GetClaims(token);
+                var (userId, username, _) = await _tokenService.GetClaims(token);
 
                 var userDB = await _userService.GetUser(int.Parse(userId));
 
@@ -112,7 +112,7 @@ namespace BooksLibrary.Api.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var (userId, username) = await _tokenService.GetClaims(token);
+                var (userId, username, _) = await _tokenService.GetClaims(token);
 
                 await _tokenService.RevokeToken(userId);
 

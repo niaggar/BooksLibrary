@@ -12,6 +12,6 @@ namespace BooksLibrary.Core.Interfaces
         Task<string> GenerateRefreshToken(string token);
         Task<bool> ValidateToken(string token);
         Task RevokeToken(string token);
-        Task<(string UserId, string Username)> GetClaims(string token);
+        Task<(string UserId, string Username, string ExpireAt)> GetClaims(string token);
     }
 }

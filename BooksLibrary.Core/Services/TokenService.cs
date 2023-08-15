@@ -4,13 +4,9 @@ using BooksLibrary.Model.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BooksLibrary.Core.Services
 {
@@ -49,7 +45,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task<string> GenerateRefreshToken(string token)
         {
-            var (userId, username) = GetTokenClaims(token);
+            var (userId, username, _) = GetTokenClaims(token);
 
             var actualDate = DateTime.Now;
             var timeSpan = TimeSpan.FromHours(1);
@@ -76,7 +72,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task RevokeToken(string token)
         {
-            var (userId, username) = GetTokenClaims(token);
+            var (userId, username, _) = GetTokenClaims(token);
             var userToken = DbSet.FirstOrDefault(ut => ut.UserId == int.Parse(userId) && ut.Token == token);
 
             if (userToken != null)
@@ -88,7 +84,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task<bool> ValidateToken(string token)
         {
-            var (userId, username) = GetTokenClaims(token);
+            var (userId, username, _) = GetTokenClaims(token);
             var userToken = await DbSet.FirstOrDefaultAsync(ut => ut.UserId == int.Parse(userId));
 
             if (userToken.Token.Equals(token) == false)
@@ -114,14 +110,14 @@ namespace BooksLibrary.Core.Services
             return true;
         }
 
-        public async Task<(string UserId, string Username)> GetClaims(string token)
+        public async Task<(string UserId, string Username, string ExpireAt)> GetClaims(string token)
         {
             return GetTokenClaims(token);
         }
 
 
         #region Private Methods
-        private (string UserId, string Username) GetTokenClaims(string token)
+        private (string UserId, string Username, string ExpireAt) GetTokenClaims(string token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadToken(token);
@@ -129,8 +125,9 @@ namespace BooksLibrary.Core.Services
 
             var userId = tokenS.Claims.First(claim => claim.Type == "userId").Value;
             var username = tokenS.Claims.First(claim => claim.Type == "sub").Value;
+            var expireAt = tokenS.Claims.First(claim => claim.Type == "exp").Value;
 
-            return (userId, username);
+            return (userId, username, expireAt);
         }
 
         private string GenerateToken(string username, int userId, DateTime actualDate, DateTime expireAt)
@@ -144,6 +141,10 @@ namespace BooksLibrary.Core.Services
                     new DateTimeOffset(actualDate).ToUniversalTime().ToUnixTimeSeconds().ToString(),
                     ClaimValueTypes.Integer64
                 ),
+                new Claim(JwtRegisteredClaimNames.Exp,
+                    new DateTimeOffset(expireAt).ToUniversalTime().ToUnixTimeSeconds().ToString(),
+                    ClaimValueTypes.Integer64
+                )
             };
 
             var issuer = _configuration["AuthenticationSettings:Issuer"];

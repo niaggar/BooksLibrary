@@ -1,6 +1,7 @@
 using BooksLibrary.Web;
 using BooksLibrary.Web.Contracts;
 using BooksLibrary.Web.Services;
+using BooksLibrary.Web.Utils;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -25,6 +26,10 @@ namespace BooksLibrary.Web
 
             services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiUrl) });
             services.AddScoped<ILoginContract, LoginService>();
+            services.AddScoped<IBookContract, BookService>();
+
+            services.AddSingleton<WebAlertsUtil>();
+            services.AddSingleton<TokenUtil>();
         }
     }
 }

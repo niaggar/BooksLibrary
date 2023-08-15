@@ -1,4 +1,5 @@
 ﻿using BooksLibrary.Model.Enums;
+using System.Text.Json.Serialization;
 
 namespace BooksLibrary.Model.TO
 {
@@ -7,9 +8,18 @@ namespace BooksLibrary.Model.TO
         public string? Value { get; set; } = "";
         public FilterEnum? Filter { get; set; } = FilterEnum.None;
 
-        public override string ToString()
+        [JsonIgnore]
+        public string Query
         {
-            return $"{Value},{Filter}";
+            get
+            {
+                if (Filter == FilterEnum.None)
+                {
+                    return "";
+                }
+
+                return $"{(int)Filter}/{Value}";
+            }
         }
     }
 }

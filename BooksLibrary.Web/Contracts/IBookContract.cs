@@ -4,6 +4,6 @@ namespace BooksLibrary.Web.Contracts
 {
     public interface IBookContract
     {
-        ValueTask<PaginationResultTO<BookTO>> GetBooks(FilterTO? filter = null, PaginationTO? pagination = null);
+        Task<PaginationResultTO<BookTO>> GetBooks(FilterTO? filter = null, PaginationTO? pagination = null);
     }
 }

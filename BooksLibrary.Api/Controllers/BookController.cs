@@ -9,7 +9,6 @@ namespace BooksLibrary.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class BookController : ControllerBase
     {
         private readonly IBookService _service;

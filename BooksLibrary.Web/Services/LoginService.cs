@@ -1,16 +1,24 @@
 ﻿using BooksLibrary.Model.TO;
 using BooksLibrary.Web.Contracts;
 using BooksLibrary.Web.Utils;
+using BooksLibrary.Web.Utils.Security;
 using BooksLibrary.Web.ViewModel;
-using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components;
+using System.Net.Http;
 
 namespace BooksLibrary.Web.Services
 {
-    public class LoginService : BaseService, ILoginContract
+    public class LoginService : ILoginContract
     {
-        public LoginService(HttpClient httpClient, WebAlertsUtil webAlerts)
-            : base(httpClient, webAlerts, "Login/")
+        private readonly HttpMethodsUtil _httpMethods;
+        private readonly AuthenticationStateProvider _authentication;
+        private readonly string baseUrl = "Login/";
+
+        public LoginService(HttpMethodsUtil httpMethodsUtil, AuthenticationStateProvider authentication)
         {
+            _httpMethods = httpMethodsUtil;
+            _authentication = authentication;
         }
 
         public async Task<UserTO> Authenticate(LoginModel loginModel)
@@ -21,9 +29,26 @@ namespace BooksLibrary.Web.Services
                 Password = loginModel.Password
             };
 
-            var resTo = await PostAsync<ResultTO<UserTO>>("Authenticate", loginTo);
+            var resTo = await _httpMethods.PostAsync<ResultTO<UserTO>>($"{baseUrl}Authenticate", loginTo);
 
-            return resTo!.Data;
+            if (resTo != null && resTo.Success)
+            {
+                var customAuth = _authentication as CustomAuthStateProvider;
+                var token = new TokenUtil { Token = resTo.Data.Token };
+
+                await customAuth!.MarkUserAsAuthenticated(token);
+            }
+
+            return resTo?.Data;
+        }
+
+        public async Task Logout()
+        {
+            var customAuth = _authentication as CustomAuthStateProvider;
+            var token = customAuth!.GetToken();
+
+            await _httpMethods.PostAsync<ResultTO<string>>($"{baseUrl}Logout", jwtToken: token);
+            await customAuth!.MarkUserAsLoggedOut();
         }
 
         public Task<UserTO> Register(UserModel user)
@@ -36,9 +61,6 @@ namespace BooksLibrary.Web.Services
             throw new NotImplementedException();
         }
 
-        public Task<string> RevokeToken(string token)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

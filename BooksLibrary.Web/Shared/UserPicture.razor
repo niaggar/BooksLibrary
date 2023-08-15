@@ -1,0 +1,39 @@
+﻿@using BooksLibrary.Web.Contracts;
+
+@inject NavigationManager Navigation;
+@inject ILoginContract LoginContract;
+
+
+<div class="user-button">
+    <button @onclick="Toggle">
+        <img src="https://avatars.githubusercontent.com/u/58381139?v=4" />
+    </button>
+
+    <div class="user-dropdown">
+        <ul>
+            <li>
+                <a href="profile">Profile</a>
+            </li>
+            <li>
+                <button @onclick="Logout">Logout</button>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+@code {
+    private bool IsOpen { get; set; } = false;
+
+    private void Toggle()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    private async Task Logout()
+    {
+        await LoginContract.Logout();
+
+        Navigation.NavigateTo("/");
+    }
+}

@@ -5,20 +5,20 @@ using System.Net.Http.Headers;
 
 namespace BooksLibrary.Web.Services
 {
-    public class BookService : BaseService, IBookContract
+    public class BookService : IBookContract
     {
-        public BookService(HttpClient httpClient, WebAlertsUtil webAlerts) 
-            : base(httpClient, webAlerts, "Book/")
+        private readonly HttpMethodsUtil _httpMethods;
+        private readonly string baseUrl = "Book/";
+
+        public BookService(HttpMethodsUtil httpMethodsUtil)
         {
+            _httpMethods = httpMethodsUtil;
         }
 
-        public async ValueTask<PaginationResultTO<BookTO>> GetBooks(FilterTO? filter = null, PaginationTO? pagination = null)
+        public async Task<PaginationResultTO<BookTO>> GetBooks(FilterTO? filter = null, PaginationTO? pagination = null)
         {
-            var token = "";
-
-            //SetToken(token);
-            var url = UrlUtil.BuildUrl("GetAll", filter, pagination);
-            var res = await GetAsync<ResultTO<PaginationResultTO<BookTO>>>(url);
+            var url = UrlUtil.BuildUrl($"{baseUrl}GetAll", filter, pagination);
+            var res = await _httpMethods.GetAsync<ResultTO<PaginationResultTO<BookTO>>>(url);
 
             return res.Data;
         }

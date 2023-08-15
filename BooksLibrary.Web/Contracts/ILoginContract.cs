@@ -8,6 +8,6 @@ namespace BooksLibrary.Web.Contracts
         Task<UserTO> Authenticate(LoginModel login);
         Task<UserTO> Register(UserModel user);
         Task<UserTO> RefreshToken(string token);
-        Task<string> RevokeToken(string token);
+        Task Logout();
     }
 }

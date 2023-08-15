@@ -1,4 +1,5 @@
 ﻿using BooksLibrary.Core.Interfaces;
+using BooksLibrary.Core.Utils;
 using BooksLibrary.Model;
 using BooksLibrary.Model.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +46,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task<string> GenerateRefreshToken(string token)
         {
-            var (userId, username, _) = GetTokenClaims(token);
+            var (userId, username, _) = TokenReaderUtil.GetTokenValues(token);
 
             var actualDate = DateTime.Now;
             var timeSpan = TimeSpan.FromHours(1);
@@ -72,7 +73,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task RevokeToken(string token)
         {
-            var (userId, username, _) = GetTokenClaims(token);
+            var (userId, username, _) = TokenReaderUtil.GetTokenValues(token);
             var userToken = DbSet.FirstOrDefault(ut => ut.UserId == int.Parse(userId) && ut.Token == token);
 
             if (userToken != null)
@@ -84,7 +85,7 @@ namespace BooksLibrary.Core.Services
 
         public async Task<bool> ValidateToken(string token)
         {
-            var (userId, username, _) = GetTokenClaims(token);
+            var (userId, username, _) = TokenReaderUtil.GetTokenValues(token);
             var userToken = await DbSet.FirstOrDefaultAsync(ut => ut.UserId == int.Parse(userId));
 
             if (userToken.Token.Equals(token) == false)
@@ -112,24 +113,11 @@ namespace BooksLibrary.Core.Services
 
         public async Task<(string UserId, string Username, string ExpireAt)> GetClaims(string token)
         {
-            return GetTokenClaims(token);
+            return TokenReaderUtil.GetTokenValues(token);
         }
 
 
         #region Private Methods
-        private (string UserId, string Username, string ExpireAt) GetTokenClaims(string token)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token);
-            var tokenS = jsonToken as JwtSecurityToken;
-
-            var userId = tokenS.Claims.First(claim => claim.Type == "userId").Value;
-            var username = tokenS.Claims.First(claim => claim.Type == "sub").Value;
-            var expireAt = tokenS.Claims.First(claim => claim.Type == "exp").Value;
-
-            return (userId, username, expireAt);
-        }
-
         private string GenerateToken(string username, int userId, DateTime actualDate, DateTime expireAt)
         {
             var claims = new Claim[]

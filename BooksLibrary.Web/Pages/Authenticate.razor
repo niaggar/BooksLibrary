@@ -1,7 +1,11 @@
 ﻿@page "/authenticate";
 @using BooksLibrary.Web.Contracts;
+@using BooksLibrary.Web.Utils;
+@using BooksLibrary.Web.Utils.Security;
 @using BooksLibrary.Web.ViewModel;
+
 @inject ILoginContract LoginContract;
+@inject NavigationManager Navigation;
 
 
 <EditForm Model="@loginModel" OnSubmit="@HandleSubmit">
@@ -21,5 +25,9 @@
             return;
 
         var result = await LoginContract.Authenticate(loginModel);
+        if (result is not null)
+        {
+            Navigation.NavigateTo("/");
+        }
     }
 }

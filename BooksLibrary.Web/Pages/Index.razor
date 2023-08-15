@@ -1,7 +1,11 @@
 ﻿@page "/"
 @using BooksLibrary.Model.TO;
 @using BooksLibrary.Web.Contracts;
+@using BooksLibrary.Web.Shared.Icons;
+
 @inject IBookContract BookContract;
+
+
 
 <PageTitle>BooksLibrary</PageTitle>
 
@@ -37,6 +41,13 @@ else
 {
     <p><em>No books found.</em></p>
 }
+
+
+<AuthorizeView>
+    <Authorized>
+        <p>Mensaje secreto si estas logueado</p>
+    </Authorized>
+</AuthorizeView>
 
 
 @code {

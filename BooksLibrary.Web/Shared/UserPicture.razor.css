@@ -5,14 +5,14 @@
 
 .user-button button {
     border: none;
-    background-color: transparent;
+    background-color: #707582;
     cursor: pointer;
     padding: 0;
     width: 56px;
     height: 56px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid transparent;
+    border: 3px solid #707582;
     transition: border 0.3s ease;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .user-dropdown ul li button {
-    color: var(--text-color);
+    color: #fac6c6;
     cursor: pointer;
     text-decoration: none;
     padding: 1rem 1.5rem;
@@ -69,6 +69,7 @@
     display: block;
     transition: background-color 0.3s ease;
     border: none;
+    border-radius: 0;
     background-color: transparent;
     width: 100%;
     text-align: left;

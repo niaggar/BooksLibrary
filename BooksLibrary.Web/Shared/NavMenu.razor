@@ -1,9 +1,5 @@
 ﻿@using BooksLibrary.Web.Shared.Icons;
 
-@inject NavigationManager Navigation;
-
-
-
 <nav>
     <div class="nav-search-content">
         <SearchIcon />
@@ -11,22 +7,4 @@
     </div>
 
     <UserPicture />
-
-    @* <AuthorizeView>
-        <Authorized>
-            <UserPicture />
-        </Authorized>
-
-        <NotAuthorized>
-            <button class="btn btn-primary" @onclick="NavigateToProfile">Login</button>
-        </NotAuthorized>
-    </AuthorizeView> *@
 </nav>
-
-
-@code {
-    private void NavigateToProfile()
-    {
-        Navigation.NavigateTo("authenticate");
-    }
-}

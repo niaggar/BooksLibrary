@@ -1,13 +1,30 @@
-﻿@inherits LayoutComponentBase
+﻿@using BooksLibrary.Model.TO
+@using BooksLibrary.Web.ViewModel
+
+@inherits LayoutComponentBase
+
+@inject AuthStateProvider AuthProvider
 
 
 <header class="main-header">
     <h3>Welcome to</h3>
-    <h1>Books Library <span>📚</span></h1>
+    <h1>WiseBooks <span>📚</span></h1>
 </header>
+
+<button @onclick="ShowUser">MOSTRAR USUARIO ACTUAL</button>
 
 <NavMenu />
 
 <main class="main-container">
     @Body
 </main>
+
+@code {
+    void ShowUser()
+    {
+        if (AuthProvider.CurrentUser is not null)
+        {
+            Console.WriteLine(AuthProvider.CurrentUser);
+        }
+    }
+}

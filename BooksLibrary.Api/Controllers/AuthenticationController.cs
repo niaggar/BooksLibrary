@@ -8,12 +8,12 @@ namespace BooksLibrary.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class LoginController : ControllerBase
+    public class AuthenticationController : ControllerBase
     {
         private readonly ITokenService _tokenService;
         private readonly IUserService _userService;
 
-        public LoginController(ITokenService tokenService, IUserService userService)
+        public AuthenticationController(ITokenService tokenService, IUserService userService)
         {
             _tokenService = tokenService;
             _userService = userService;
@@ -112,9 +112,7 @@ namespace BooksLibrary.Api.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                var (userId, username, _) = await _tokenService.GetClaims(token);
-
-                await _tokenService.RevokeToken(userId);
+                await _tokenService.RevokeToken(token);
 
                 var res = new ResultTO<string> { Success = true, Data = "Logout success" };
                 return Ok(res);

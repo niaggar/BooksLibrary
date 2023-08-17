@@ -1,33 +1,57 @@
-﻿@using BooksLibrary.Web.Contracts;
+﻿@using BooksLibrary.Model.TO;
+@using BooksLibrary.Web.Contracts;
+@using BooksLibrary.Web.ViewModel;
 
 @inject NavigationManager Navigation;
-@inject ILoginContract LoginContract;
+@inject IAuthContract LoginContract;
+@inject AuthStateProvider AuthState;
 
 
 <div class="user-button">
-    <button @onclick="Toggle">
-        <img src="https://avatars.githubusercontent.com/u/58381139?v=4" />
+    <button>
+        <AuthorizeView>
+            <Authorized>
+                @if (AuthState.CurrentUser is not null)
+                {
+                    <img src="@(AuthState.CurrentUser.Picture ?? "img/user-icon.png")" alt="User picture" />
+                }
+            </Authorized>
+
+            <NotAuthorized>
+                <img src="img/user-icon.png" alt="Generic user picture" />
+            </NotAuthorized>
+        </AuthorizeView>
     </button>
 
     <div class="user-dropdown">
-        <ul>
-            <li>
-                <a href="profile">Profile</a>
-            </li>
-            <li>
-                <button @onclick="Logout">Logout</button>
-            </li>
-        </ul>
+        <AuthorizeView>
+            <Authorized>
+                <ul>
+                    <li>
+                        <a href="profile">Profile</a>
+                    </li>
+                    <li>
+                        <button @onclick="Logout">Logout</button>
+                    </li>
+                </ul>
+            </Authorized>
+
+            <NotAuthorized>
+                <ul>
+                    <li>
+                        <button @onclick="NavigateToLogin">Login</button>
+                    </li>
+                </ul>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 
 
 @code {
-    private bool IsOpen { get; set; } = false;
-
-    private void Toggle()
+    private void NavigateToLogin()
     {
-        IsOpen = !IsOpen;
+        Navigation.NavigateTo("authenticate");
     }
 
     private async Task Logout()

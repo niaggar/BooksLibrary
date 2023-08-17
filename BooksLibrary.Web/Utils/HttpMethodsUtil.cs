@@ -27,6 +27,10 @@ namespace BooksLibrary.Web.Utils
             }
 
             var resTo = await res.Content.ReadFromJsonAsync<T>();
+
+            if (!string.IsNullOrEmpty(jwtToken))
+                Client.DefaultRequestHeaders.Authorization = null;
+
             return resTo;
         }
 
@@ -43,6 +47,10 @@ namespace BooksLibrary.Web.Utils
             }
 
             var resTo = await res.Content.ReadFromJsonAsync<T>();
+
+            if (!string.IsNullOrEmpty(jwtToken))
+                Client.DefaultRequestHeaders.Authorization = null;
+
             return resTo;
         }
     }

@@ -1,10 +1,11 @@
 ﻿@page "/authenticate";
+
 @using BooksLibrary.Web.Contracts;
 @using BooksLibrary.Web.Utils;
 @using BooksLibrary.Web.Utils.Security;
 @using BooksLibrary.Web.ViewModel;
 
-@inject ILoginContract LoginContract;
+@inject IAuthContract LoginContract;
 @inject NavigationManager Navigation;
 
 
@@ -17,7 +18,21 @@
 
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
     private LoginModel loginModel = new LoginModel();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+		if (authState?.User?.Identity?.IsAuthenticated ?? false)
+		{
+			Navigation.NavigateTo("/");
+		}
+    }
+
 
     private async Task HandleSubmit()
     {
